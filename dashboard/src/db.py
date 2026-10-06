@@ -10,6 +10,6 @@ cursor = db_conn.cursor()
 
 #   tasks table
 cursor.execute("" \
-"CREATE TABLE IF NOT EXISTS task(title, date, description, status)")
+"CREATE TABLE IF NOT EXISTS task(task_id, title, date, description, status)")
 
 #   
