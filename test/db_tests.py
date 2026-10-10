@@ -21,5 +21,8 @@ class TestTasks:
         yield connection
         connection.close()
 
+    def test_db_task_table_creation(self, test_conn):
+        pass
+
 
     
