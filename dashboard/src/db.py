@@ -16,5 +16,7 @@ cursor.execute(
     "date_assigned TEXT NOT NULL, " \
     "description TEXT NOT NULL, " \
     "status TEXT NOT NULL DEFAULT 'ready' " \
-    "CHECK (status IN ('ready', 'in_progress', 'completed'))"
+    "CHECK (status IN ('ready', 'in_progress', 'completed'))" \
     ");")
+
+db_conn.close()
