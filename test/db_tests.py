@@ -1,5 +1,15 @@
 import pytest
 import sqlite3
+from dashboard.src.db import DBConnection
+from unittest.mock import patch
+
+def is_open(conn) -> bool:
+    "test helper method for determining if a connection is open."
+    try:
+        conn.execute("SELECT 1")
+        return True
+    except sqlite3.ProgrammingError:
+        return False
 
 class TestTasks:
 
@@ -21,8 +31,17 @@ class TestTasks:
         yield connection
         connection.close()
 
-    def test_db_task_table_creation(self, test_conn):
-        pass
+    def test_db_open_successful(self, monkeypatch):
+        monkeypatch.setattr(DBConnection, "DB_NAME", ":memory:")
+        test_db_conn = DBConnection()
+
+        connection = test_db_conn._open_db()
+
+        assert connection is not None
+        assert is_open(connection)
+
+        connection.close()
+
 
 
     
