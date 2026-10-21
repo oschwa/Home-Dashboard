@@ -42,6 +42,16 @@ class TestTasks:
 
         connection.close()
 
+    @patch("dashboard.src.db.sqlite3.connect",
+       side_effect=sqlite3.DatabaseError())
+    def test_db_open_failure(self, mock_connect):
+        test_db_conn = DBConnection()
+        with pytest.raises(sqlite3.DatabaseError):
+            connection = test_db_conn._open_db()
+        mock_connect.assert_called_once()
+
+    
+
 
 
     
