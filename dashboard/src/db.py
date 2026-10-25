@@ -1,9 +1,13 @@
 import sqlite3
+from sqlite3 import DatabaseError
 
+class DatabaseConnectError(DatabaseError):
+    "Exception for failing to open or close the database."
 
 class DBConnection:
     DB_NAME = "home_dash.db"
 
+    # Database-related exceptions
     NO_OPEN_ERROR = "ERROR - Could not open dashboard database.\n"
     NO_CLOSE_ERROR = "ERROR - Dashboard database could not safely close.\n"
     TASK_SETUP_ERROR = "ERROR - Could not create Task Schema.\n"
@@ -18,27 +22,26 @@ class DBConnection:
             ");"
 
     def _open_db(self):
-        "Open the application file database."
         try:
+            "Open the application file database."
             db_conn = sqlite3.connect(self.DB_NAME)
             return db_conn
-        except sqlite3.DatabaseError as e:
-            raise e
+        except DatabaseError as e:
+            raise DatabaseConnectError(self.NO_OPEN_ERROR) from e
 
     def _close_db(self, db_conn):
         "Close a given database connection."
         try:
             db_conn.close()
-        except sqlite3.DatabaseError as e:
-            print(self.NO_CLOSE_ERROR)
+        except DatabaseError as e:
+            raise DatabaseConnectError(self.NO_CLOSE_ERROR) from e
             
-
     def make_task_table(self):
         "Update schema with Task table."
-        db_conn = self._open_db()
-
-        if (db_conn is None):
-            return
+        try:
+            db_conn = self._open_db()
+        except DatabaseConnectError as e:
+            return e
         
         cursor = db_conn.cursor()
 
@@ -47,7 +50,10 @@ class DBConnection:
         except sqlite3.DatabaseError as e:
             print(self.TASK_SETUP_ERROR)
 
-        self._close_db()
+        try: 
+            self._close_db()
+        except DatabaseConnectError as e:
+            return e
 
 
 

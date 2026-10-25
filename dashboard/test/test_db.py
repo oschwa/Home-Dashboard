@@ -1,6 +1,7 @@
 import pytest
 import sqlite3
 from src.db import DBConnection
+from src.db import DatabaseConnectError
 from unittest.mock import patch
 
 def is_open(conn) -> bool:
@@ -34,19 +35,16 @@ class TestTasks:
     def test_db_open_successful(self, monkeypatch):
         monkeypatch.setattr(DBConnection, "DB_NAME", ":memory:")
         test_db_conn = DBConnection()
-
         connection = test_db_conn._open_db()
-
         assert connection is not None
         assert is_open(connection)
-
         connection.close()
 
     @patch("src.db.sqlite3.connect",
        side_effect=sqlite3.DatabaseError())
-    def test_db_open_failure(self, mock_connect):
+    def test_successfully_catches_db_open_exception(self, mock_connect):
         test_db_conn = DBConnection()
-        with pytest.raises(sqlite3.DatabaseError):
+        with pytest.raises(DatabaseConnectError):
             connection = test_db_conn._open_db()
         mock_connect.assert_called_once()
 
