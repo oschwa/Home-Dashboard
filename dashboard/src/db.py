@@ -1,7 +1,7 @@
 import sqlite3
 from sqlite3 import DatabaseError
 
-class DatabaseConnectError:
+class DatabaseConnectError(DatabaseError):
     "Exception for failing to open or close the database."
 
 class DBConnection:
