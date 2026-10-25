@@ -1,6 +1,6 @@
 import pytest
 import sqlite3
-from dashboard.src.db import DBConnection
+from src.db import DBConnection
 from unittest.mock import patch
 
 def is_open(conn) -> bool:
@@ -42,7 +42,7 @@ class TestTasks:
 
         connection.close()
 
-    @patch("dashboard.src.db.sqlite3.connect",
+    @patch("src.db.sqlite3.connect",
        side_effect=sqlite3.DatabaseError())
     def test_db_open_failure(self, mock_connect):
         test_db_conn = DBConnection()
