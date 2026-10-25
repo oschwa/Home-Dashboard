@@ -23,15 +23,14 @@ class DBConnection:
             db_conn = sqlite3.connect(self.DB_NAME)
             return db_conn
         except sqlite3.DatabaseError as e:
-            print(self.NO_OPEN_ERROR + e)
-            return None
+            raise e
 
     def _close_db(self, db_conn):
         "Close a given database connection."
         try:
             db_conn.close()
         except sqlite3.DatabaseError as e:
-            print(self.NO_CLOSE_ERROR + e)
+            print(self.NO_CLOSE_ERROR)
             
 
     def make_task_table(self):
@@ -46,7 +45,7 @@ class DBConnection:
         try:
             cursor.execute(self.TASK_SETUP_QUERY)
         except sqlite3.DatabaseError as e:
-            print(self.TASK_SETUP_ERROR  + e)
+            print(self.TASK_SETUP_ERROR)
 
         self._close_db()
 
