@@ -2,7 +2,7 @@ import pytest
 import sqlite3
 from src.db import DBConnection
 from src.db import DatabaseConnectError
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 def is_open(conn) -> bool:
     "test helper method for determining if a connection is open."
@@ -45,9 +45,22 @@ class TestTasks:
     def test_successfully_catches_db_open_exception(self, mock_connect):
         test_db_conn = DBConnection()
         with pytest.raises(DatabaseConnectError):
-            connection = test_db_conn._open_db()
+            test_db_conn._open_db()
         mock_connect.assert_called_once()
 
+    @patch("src.db.sqlite3.connect")
+    def test_successfully_catches_db_close_exception(self, mock_connect):
+        mock_conn = MagicMock()
+        mock_conn.close.side_effect = sqlite3.DatabaseError()
+        mock_connect.return_value = mock_conn
+
+        test_db_conn = DBConnection()
+        connection = test_db_conn._open_db()
+
+        with pytest.raises(DatabaseConnectError):
+            test_db_conn._close_db(connection)
+
+        mock_conn.close.assert_called_once()
     
 
 
