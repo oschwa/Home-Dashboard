@@ -1,18 +1,10 @@
 import pytest
 import sqlite3
-from src.db import DBConnection
+from src.db import open_db, close_db
 from src.db import DatabaseConnectError
 from unittest.mock import patch, MagicMock
 
-def is_open(conn) -> bool:
-    "test helper method for determining if a connection is open."
-    try:
-        conn.execute("SELECT 1")
-        return True
-    except sqlite3.ProgrammingError:
-        return False
-
-class TestTasks:
+class TestConnection:
 
     TASK_SETUP_QUERY = "CREATE TABLE IF NOT EXISTS task (" \
         "task_id TEXT PRIMARY KEY, " \
@@ -32,35 +24,44 @@ class TestTasks:
         yield connection
         connection.close()
 
-    def test_db_open_successful(self, monkeypatch):
-        monkeypatch.setattr(DBConnection, "DB_NAME", ":memory:")
-        test_db_conn = DBConnection()
-        connection = test_db_conn._open_db()
-        assert connection is not None
-        assert is_open(connection)
-        connection.close()
+    @patch("src.db.sqlite3.connect")
+    def test_db_open_successful(self, mock_connect):
+        test_connection = open_db()
+        assert test_connection is not None
+        mock_connect.assert_called_once()
 
+    @patch("src.db.sqlite3.connect")
+    def test_db_close_successful(self, mock_connect):
+        mock_conn = mock_connect.return_value
+
+        test_connection = open_db()
+        close_db(test_connection)
+
+        mock_connect.assert_called_once()
+        mock_conn.close.assert_called_once()
+        
     @patch("src.db.sqlite3.connect",
        side_effect=sqlite3.DatabaseError())
     def test_successfully_catches_db_open_exception(self, mock_connect):
-        test_db_conn = DBConnection()
+        test_connection = None
         with pytest.raises(DatabaseConnectError):
-            test_db_conn._open_db()
+            test_connection = open_db()
+        assert test_connection is None
         mock_connect.assert_called_once()
 
     @patch("src.db.sqlite3.connect")
     def test_successfully_catches_db_close_exception(self, mock_connect):
-        mock_conn = MagicMock()
-        mock_conn.close.side_effect = sqlite3.DatabaseError()
-        mock_connect.return_value = mock_conn
+        mock_connection_result = MagicMock()
+        mock_connection_result.close.side_effect = sqlite3.DatabaseError()
+        mock_connect.return_value = mock_connection_result
 
-        test_db_conn = DBConnection()
-        connection = test_db_conn._open_db()
+        test_connection = open_db()
 
         with pytest.raises(DatabaseConnectError):
-            test_db_conn._close_db(connection)
+            close_db(test_connection)
 
-        mock_conn.close.assert_called_once()
+        mock_connect.assert_called_once()
+    
     
 
 
