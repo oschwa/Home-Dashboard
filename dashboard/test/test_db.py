@@ -4,7 +4,7 @@ from src.db import open_db, close_db
 from src.db import DatabaseConnectError
 from unittest.mock import patch, MagicMock
 
-class TestTasks:
+class TestConnection:
 
     TASK_SETUP_QUERY = "CREATE TABLE IF NOT EXISTS task (" \
         "task_id TEXT PRIMARY KEY, " \
@@ -30,6 +30,16 @@ class TestTasks:
         assert test_connection is not None
         mock_connect.assert_called_once()
 
+    @patch("src.db.sqlite3.connect")
+    def test_db_close_successful(self, mock_connect):
+        mock_conn = mock_connect.return_value
+
+        test_connection = open_db()
+        close_db(test_connection)
+
+        mock_connect.assert_called_once()
+        mock_conn.close.assert_called_once()
+        
     @patch("src.db.sqlite3.connect",
        side_effect=sqlite3.DatabaseError())
     def test_successfully_catches_db_open_exception(self, mock_connect):
