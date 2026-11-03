@@ -61,6 +61,10 @@ class TestConnection:
             close_db(test_connection)
 
         mock_connect.assert_called_once()
+
+class TestTransactions:
+    """Tests for transaction-handling logic"""
+    
     
     
 
