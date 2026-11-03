@@ -1,6 +1,6 @@
 import pytest
 import sqlite3
-from src.db import open_db, close_db
+from src.db import open_db, close_db, TASK_SETUP_QUERY
 from src.db import DatabaseConnectError
 from unittest.mock import patch, MagicMock
 
@@ -64,10 +64,11 @@ class TestConnection:
 
 class TestTransactions:
     """Tests for transaction-handling logic"""
-    
-    
-    
 
-
-
-    
+    @pytest.fixture
+    def db():
+        test_connection = sqlite3.connect(":memory:")
+        cursor = test_connection.cursor()
+        cursor.execute(TASK_SETUP_QUERY)
+        yield test_connection
+        test_connection.close()
